@@ -4,40 +4,116 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.ts" defer></script>
+    <title>DeepKick Lyrics</title>
+    <script type="module" src="/src/index.ts" defer></script>
   </head>
 
   <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
-
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">DeepKick Lyrics</h1>
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+      <nav class="app-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="queue" role="tab" aria-selected="true">Queue</button>
+        <button class="tab-btn" data-tab="history" role="tab" aria-selected="false">History</button>
+        <button class="tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
+      </nav>
+    </header>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
+    <main class="app-main">
+      <!-- Queue Tab -->
+      <section class="tab-panel active" data-tab-panel="queue" role="tabpanel">
+        <div class="queue-toolbar">
+          <dk-file-picker data-action="files" class="toolbar-btn">
+            <button class="btn btn-primary" type="button">
+              <span class="btn-icon">📁</span> Add Files
+            </button>
+          </dk-file-picker>
+          <dk-file-picker data-action="directory" class="toolbar-btn">
+            <button class="btn btn-secondary" type="button">
+              <span class="btn-icon">📂</span> Add Folder
+            </button>
+          </dk-file-picker>
+          <div class="toolbar-spacer"></div>
+          <button class="btn btn-danger" id="btn-clear-queue" type="button">Clear Queue</button>
+          <button class="btn btn-warning" id="btn-remove-lyrics" type="button">Remove All Lyrics</button>
+        </div>
+
+        <dk-track-list></dk-track-list>
+
+        <div class="processing-bar" id="processing-bar" style="display:none;">
+          <div class="processing-info">
+            <span id="processing-text">Processing...</span>
+            <progress id="processing-progress" value="0" max="100"></progress>
+          </div>
+          <div class="processing-actions">
+            <button class="btn btn-primary" id="btn-start-processing" type="button">Start Processing</button>
+            <button class="btn btn-secondary" id="btn-cancel-processing" type="button" style="display:none;">Cancel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Tab -->
+      <section class="tab-panel" data-tab-panel="history" role="tabpanel">
+        <div class="history-toolbar">
+          <h2>Processing History</h2>
+          <button class="btn btn-ghost" id="btn-clear-history" type="button">Clear History</button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+
+      <!-- Settings Tab -->
+      <section class="tab-panel" data-tab-panel="settings" role="tabpanel">
+        <form id="settings-form" class="settings-form">
+          <h2>Settings</h2>
+
+          <div class="setting-group">
+            <label for="setting-api-endpoint">API Endpoint</label>
+            <input type="url" id="setting-api-endpoint" placeholder="https://lrclib.net/api" />
+            <small>Lyrics API endpoint (default: lrclib.net)</small>
+          </div>
+
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="setting-prefer-synced" />
+              <span>Prefer synced lyrics (LRC format)</span>
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="setting-auto-remove" />
+              <span>Skip files that already have lyrics</span>
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="setting-notifications" />
+              <span>Show notification when processing completes</span>
+            </label>
+          </div>
+
+          <div class="setting-group">
+            <label for="setting-theme">Theme</label>
+            <select id="setting-theme">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+
+          <div class="setting-actions">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="button" class="btn btn-secondary" id="btn-reset-settings">Reset to Defaults</button>
+          </div>
+        </form>
+      </section>
     </main>
+
+    <!-- Lyrics Editor Modal -->
+    <dk-modal id="lyrics-modal">
+      <dk-lyrics-editor></dk-lyrics-editor>
+    </dk-modal>
   </body>
 </html>
