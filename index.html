@@ -3,41 +3,98 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.ts" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f1419" />
+    <title>DeepKick Lyrics</title>
+    <script type="module" src="/src/index.ts" defer></script>
   </head>
 
   <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+    <header class="appbar">
+      <h1>DeepKick Lyrics</h1>
+      <nav id="appbar-status" class="hint"></nav>
+    </header>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
+    <ram-tabs id="tabs-main" class="grow">
+      <ram-tab-button data-tab="pick" data-to="pick">Pick</ram-tab-button>
+      <ram-tab-button data-tab="queue" data-to="queue">Queue</ram-tab-button>
+      <ram-tab-button data-tab="report" data-to="report">Report</ram-tab-button>
+      <ram-tab-button data-tab="settings" data-to="settings">Settings</ram-tab-button>
+
+      <ram-tab data-tab="pick" id="tab-pick">
+        <section class="tab-body" id="pick-section">
+          <h2>Pick files or folders</h2>
+          <div class="row gap">
+            <button id="pick-files">Pick files</button>
+            <button id="pick-folders">Pick folder</button>
+            <button id="clear-list" class="lineout">Clear</button>
+          </div>
+          <p id="pick-status" class="hint">No files selected</p>
+          <ul id="pick-list" class="list lineout-list"></ul>
+          <div class="row gap">
+            <button id="start-queue" class="primary">Start processing</button>
+            <label class="row gap">
+              <input type="checkbox" id="overwrite-existing" />
+              <span>Overwrite existing lyrics</span>
+            </label>
+          </div>
+        </section>
+      </ram-tab>
+
+      <ram-tab data-tab="queue" id="tab-queue">
+        <section class="tab-body" id="queue-section">
+          <h2>Queue</h2>
+          <div class="row gap">
+            <progress id="queue-progress" value="0" max="1"></progress>
+            <span id="queue-progress-text" class="hint">0 / 0</span>
+            <button id="abort-queue" class="lineout">Abort</button>
+          </div>
+          <ul id="queue-list" class="list lineout-list"></ul>
+        </section>
+      </ram-tab>
+
+      <ram-tab data-tab="report" id="tab-report">
+        <section class="tab-body" id="report-section">
+          <h2>Report</h2>
+          <p id="report-empty" class="hint">Process a queue to see the report here.</p>
+          <div id="report-body" class="hidden">
+            <ul class="lineout-list">
+              <li class="lineout report-row"><span>Processed</span><span id="report-total">0</span></li>
+              <li class="lineout report-row report-ok"><span>Lyrics embedded</span><span id="report-ok">0</span></li>
+              <li class="lineout report-row report-existing"><span>Skipped (already had lyrics)</span><span id="report-existing">0</span></li>
+              <li class="lineout report-row report-notfound"><span>Not found</span><span id="report-notfound">0</span></li>
+              <li class="lineout report-row report-notag"><span>No artist/title tag</span><span id="report-notag">0</span></li>
+              <li class="lineout report-row report-err"><span>Errors</span><span id="report-err">0</span></li>
+            </ul>
+          </div>
+        </section>
+      </ram-tab>
+
+      <ram-tab data-tab="settings" id="tab-settings">
+        <section class="tab-body" id="settings-section">
+          <h2>Settings</h2>
+          <ram-labeled legend="lrclib base URL" id="setting-api-base" placeholder="https://lrclib.net"></ram-labeled>
+          <ram-labeled legend="Notification on complete" id="setting-notify">
+            <select id="setting-notify-select">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </ram-labeled>
+        </section>
+      </ram-tab>
+    </ram-tabs>
+
+    <ram-modal id="edit-modal" class="hidden">
+      <h3 id="edit-modal-title">Edit lyrics</h3>
+      <p id="edit-modal-meta" class="hint"></p>
+      <textarea id="edit-modal-textarea" rows="14" class="grow"></textarea>
+      <div class="row gap">
+        <button id="edit-modal-save" class="primary">Save</button>
+        <button id="edit-modal-clear" class="lineout">Remove lyrics</button>
+        <button id="edit-modal-cancel" class="lineout">Cancel</button>
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+    </ram-modal>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
+    <div id="toast-host"></div>
   </body>
 </html>

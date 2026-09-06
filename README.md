@@ -1,5 +1,8 @@
 # DeepKick Lyrics
-Puts lyrics into MP3 and FLAC metadata
+Puts lyrics into MP3 and FLAC metadata.
+
+## Status
+Planning. See [`plans/deepkick-lyrics-plan.md`](plans/deepkick-lyrics-plan.md) for the full implementation plan, architecture, and phased todo.
 
 ## Prompt
 ```

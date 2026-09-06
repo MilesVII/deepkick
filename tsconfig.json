@@ -17,7 +17,16 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases (mirror aegir) */
+    "baseUrl": ".",
+    "paths": {
+      "@rampike/*": ["src/components/*"],
+      "@units/*": ["src/units/*"],
+      "@root/*": ["src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["vite.config.ts"]
 }
