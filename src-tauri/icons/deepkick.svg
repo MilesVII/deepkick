@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+	<rect width="512" height="512" rx="96" fill="#171717"/>
+	<!-- lyric lines -->
+	<rect x="96" y="128" width="200" height="34" rx="17" fill="#EDEDED"/>
+	<rect x="96" y="204" width="152" height="34" rx="17" fill="#EDEDED"/>
+	<rect x="96" y="280" width="200" height="34" rx="17" fill="#EDEDED"/>
+	<rect x="96" y="356" width="120" height="34" rx="17" fill="#EDEDED"/>
+	<!-- note head and stem, the "kick" -->
+	<path d="M356 108 v212 a56 56 0 1 1 -36 -52 V108 z" fill="#DA4000"/>
+	<rect x="320" y="108" width="100" height="40" rx="8" fill="#DA4000"/>
+</svg>

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "slm-dkl",
+  "productName": "DeepKick Lyrics",
   "version": "0.1.0",
   "identifier": "com.milesseventh.deepkick",
   "build": {
@@ -13,9 +13,9 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "slm-dkl",
-        "width": 800,
-        "height": 600
+        "title": "DeepKick Lyrics",
+        "width": 420,
+        "height": 800
       }
     ],
     "security": {

@@ -1,5 +1,56 @@
 # DeepKick Lyrics
-Puts lyrics into MP3 and FLAC metadata
+Puts lyrics into MP3 and FLAC metadata. Android app built with Tauri 2, a vanilla TS frontend and Rust.
+
+Successor of *Seventh Lyrics Manager*, which stopped working once Android moved to the Storage Access Framework.
+
+## What it does
+- Pick files or whole folders through the system picker; supported files (`.mp3`, `.flac`) end up in a queue
+- **Fetch lyrics**: a foreground service keeps the process alive while a Rust worker walks the queue, looks each track up on [LRCLIB](https://lrclib.net) (optionally falling back to lyrics.ovh) by artist / title / album / duration, and writes the result into the `USLT` frame (ID3v2) or the `LYRICS` Vorbis comment (FLAC)
+- **Remove lyrics** from every file in the queue
+- A notification is posted when the run is over; tapping it opens the **report** with the status of every file
+- Tap any file to open the **editor**: view, edit, search online (pick between plain and synced candidates), save or remove its lyrics
+
+## Layout
+```
+index.html            page shell (tabs: queue, report, editor, settings)
+src/
+  index.ts            defines custom elements and runs the units
+  api.ts              typed invoke() wrappers + event subscriptions
+  store.ts            non-reactive queue snapshot shared by units
+  units/              one module per screen (queue, report, editor, settings, shell, navigation, toasts)
+  components/         rampike custom elements (tabs, modal, popup, fieldset)
+  css/                main / theme / utils / components
+src-tauri/
+  src/
+    lib.rs            builder, plugins, command registration
+    commands.rs       IPC commands
+    state.rs          queue / run / report types
+    worker.rs         the queue runner thread
+    tags.rs           lofty-based lyrics read/write for MP3 and FLAC
+    lyrics.rs         LRCLIB + lyrics.ovh client (ureq)
+    persist.rs        queue + report persisted in the app data dir
+  plugins/deepkick/   local Tauri plugin
+    src/mobile.rs     Rust side: calls into the Kotlin plugin
+    src/desktop.rs    desktop stand-in (rfd dialogs, plain paths) for development on a PC
+    android/          Kotlin: SAF pickers, fd hand-off, foreground service, notifications, insets, back handling
+```
+
+The file access model: Kotlin opens the `content://` document with `openFileDescriptor()` and hands the raw descriptor to Rust, which wraps it in a `File` and lets lofty rewrite the tags in place. No copies, no temporary files.
+
+## Development
+```bash
+npm install
+npm run tauri dev                 # desktop window (Windows/Linux/macOS), uses native dialogs
+npm run tauri android dev         # on a connected device / emulator
+npm run tauri android build --debug --target x86_64 --apk   # emulator APK
+```
+
+Core tests (tag round-trips against generated files, live LRCLIB lookups):
+```bash
+DEEPKICK_TEST_DIR=/path/to/testfiles cargo test --manifest-path src-tauri/Cargo.toml --lib -- --include-ignored
+```
+Test files can be generated with ffmpeg, e.g.
+`ffmpeg -f lavfi -i "sine=frequency=440:duration=4" -metadata artist=Radiohead -metadata title=Creep -c:a libmp3lame creep.mp3`.
 
 ## Prompt
 ```

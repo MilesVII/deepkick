@@ -1,0 +1,2 @@
+com.milesseventh.deepkick.bridge
+drawable ic_deepkick_notification

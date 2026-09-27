@@ -1,0 +1,242 @@
+/* ---- layout shell --------------------------------------------------------------------- */
+
+.main {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	width: 100%;
+	max-width: var(--content-width);
+	margin-inline: auto;
+	scrollbar-width: thin;
+}
+
+.topbar {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--dims-huge);
+	flex-shrink: 0;
+
+	padding: var(--dims-reg) var(--dims-huge);
+	background-color: var(--color-base);
+	z-index: 2;
+}
+.topbar-actions {
+	display: flex;
+	flex-flow: row-reverse wrap;
+	align-items: center;
+	gap: var(--dims-smol);
+}
+
+.bottombar {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	gap: var(--dims-reg);
+	flex-shrink: 0;
+	padding: var(--dims-reg) var(--dims-huge);
+	background-color: var(--color-base);
+	z-index: 2;
+}
+.bottombar[hidden] {
+	display: none;
+}
+
+.brand {
+	font-weight: 700;
+	letter-spacing: -.02em;
+	white-space: nowrap;
+}
+.brand > span {
+	color: var(--color-accent);
+	margin-inline-start: .3ch;
+}
+
+/* ---- widgets -------------------------------------------------------------------------- */
+
+/* lineout is referenced at .strip in utils.css */
+.lineout, fieldset {
+	border: 2px solid var(--color-secondary);
+	transition: box-shadow .2s ease, border-color .2s ease;
+	padding: var(--dims-smol);
+	border-radius: var(--dims-smol);
+}
+.lineout:hover, .lineout:focus, fieldset:has(*:focus), fieldset:hover, [data-current] {
+	border-color: var(--color-accent);
+	box-shadow: 0 0 var(--dims-smol) var(--color-accent);
+	outline: none;
+}
+.lineout:active {
+	border-color: var(--color-base);
+}
+
+button.lineout, .lineout.pointer, select.lineout {
+	padding-inline: var(--dims-reg);
+	min-height: 36px;
+}
+button.lineout.accent {
+	border-color: var(--color-accent);
+	background-color: var(--color-accent);
+	color: var(--color-base);
+	font-weight: 600;
+}
+
+button.lineout, .pointer {
+	cursor: pointer;
+}
+
+.placeholder {
+	border: 2px solid var(--color-accent);
+	color: var(--color-accent);
+	padding: var(--dims-smol) var(--dims-reg);
+	border-radius: var(--dims-smol);
+}
+
+.hint {
+	font: var(--font-smol);
+	color: var(--color-subtext);
+}
+
+fieldset {
+	margin: 0;
+	box-shadow: none !important;
+	min-width: 0;
+}
+fieldset > legend {
+	color: var(--color-secondary);
+	transition: color .2s;
+	padding-left: var(--dims-smol);
+	padding-right: var(--dims-smol);
+	font: var(--font-smol);
+}
+fieldset:has(*:focus) > legend, fieldset:hover > legend {
+	color: var(--color-text);
+}
+fieldset > input, fieldset > textarea {
+	width: 100%;
+}
+
+summary.settings-label {
+	font: var(--font-bold);
+	width: fit-content;
+	border-bottom: 2px solid var(--color-accent);
+}
+
+.settings-theme-selector-button {
+	width: 56px;
+	height: 40px;
+	border: 2px solid var(--color-secondary);
+	border-radius: var(--dims-smol);
+	cursor: pointer;
+	background: linear-gradient(135deg, var(--color-base) 50%, var(--color-accent) 50%);
+}
+
+/* ---- queue / report items ------------------------------------------------------------- */
+
+.queue-item {
+	display: flex;
+	flex-flow: row nowrap;
+	gap: var(--dims-reg);
+	padding: var(--dims-reg);
+	align-items: stretch;
+}
+.queue-item[data-status="processing"] {
+	border-color: var(--color-accent);
+	box-shadow: 0 0 var(--dims-smol) var(--color-accent);
+}
+.queue-item-main {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.queue-item-name {
+	font-weight: 600;
+}
+.queue-item-side {
+	flex-shrink: 0;
+	align-items: end;
+	justify-content: space-between;
+}
+.queue-item-remove {
+	min-height: 32px;
+	padding-inline: var(--dims-reg);
+}
+.queue-item-detail {
+	color: var(--color-secondary);
+}
+
+.badge {
+	font: var(--font-smol);
+	padding: 2px var(--dims-reg);
+	border-radius: 1000px;
+	background-color: var(--color-base-semi);
+	border: 1px solid var(--color-secondary);
+	white-space: nowrap;
+}
+.badge[data-status="done"], .badge[data-status="removed"] {
+	border-color: var(--color-ok);
+	color: var(--color-ok);
+}
+.badge[data-status="error"], .badge[data-status="unsupported"] {
+	border-color: var(--color-bad);
+	color: var(--color-bad);
+}
+.badge[data-status="notFound"], .badge[data-status="noTag"] {
+	border-color: var(--color-warn);
+	color: var(--color-warn);
+}
+.badge[data-status="processing"] {
+	border-color: var(--color-accent);
+	color: var(--color-accent);
+}
+.badge[data-status="pending"] {
+	color: var(--color-subtext);
+}
+
+.chip {
+	background-color: var(--color-base-semi);
+	border: 1px solid var(--color-secondary);
+	transition: background-color .2s ease;
+	padding-inline: var(--dims-reg);
+	padding-block: var(--dims-smol);
+	border-radius: 1000px;
+}
+.chip[data-selected="true"] {
+	background-color: var(--color-accent);
+	border-color: var(--color-accent);
+	color: var(--color-base);
+}
+
+/* ---- editor --------------------------------------------------------------------------- */
+
+.editor-lyrics {
+	width: 100%;
+	min-height: 40vh;
+	font-family: "Ubuntu Sans Mono";
+	font-size: 15px;
+	line-height: 20px;
+	padding: var(--dims-reg);
+	white-space: pre;
+	overflow-wrap: normal;
+	overflow-x: auto;
+}
+.editor-lyrics.wrap {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	overflow-x: hidden;
+}
+
+/* ---- toasts --------------------------------------------------------------------------- */
+
+.toast {
+	position: fixed;
+	z-index: 10;
+	max-width: calc(100vw - var(--gap) * 2);
+	padding: var(--dims-reg) var(--dims-huge);
+	border-radius: var(--dims-smol);
+	background: var(--color-base);
+	border: 2px solid var(--color-accent);
+	box-shadow: 0 0 var(--dims-reg) var(--color-accent);
+	transition: transform .3s ease, left .3s ease;
+}

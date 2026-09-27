@@ -1,43 +1,148 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/src/main.ts" defer></script>
-  </head>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+		<title>DeepKick Lyrics</title>
 
-  <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+		<link rel="stylesheet" href="/src/css/main.css">
+		<link rel="stylesheet" href="/src/css/theme.css">
+		<link rel="stylesheet" href="/src/css/utils.css">
+		<link rel="stylesheet" href="/src/css/components.css">
+		<script type="module" src="/src/index.ts"></script>
+	</head>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
-      </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+	<body>
+		<ram-tabs id="tabs-main" tab="queue">
+			<ram-tab key="queue">
+				<div class="topbar shadow">
+					<h1 class="brand">DeepKick<span>Lyrics</span></h1>
+					<div class="topbar-actions">
+						<button class="lineout fit" data-to="settings">settings</button>
+						<button class="lineout fit" data-to="report">report</button>
+					</div>
+				</div>
+				<div class="main col pad">
+					<div class="row-wrap">
+						<button id="queue-add-files" class="lineout fit">add files</button>
+						<button id="queue-add-folder" class="lineout fit">add folder</button>
+						<button id="queue-clear" class="lineout fit">clear</button>
+					</div>
+					<div id="queue-status" class="list"></div>
+					<div id="queue-list" class="list"></div>
+				</div>
+				<div id="queue-actions" class="bottombar shadow"></div>
+			</ram-tab>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
-  </body>
+			<ram-tab key="report">
+				<div class="topbar shadow">
+					<button class="lineout fit" data-to="queue">back</button>
+					<div class="topbar-actions">
+						<button id="report-clear" class="lineout fit">clear report</button>
+					</div>
+				</div>
+				<div class="main col pad low-pad">
+					<div id="report-summary" class="list"></div>
+					<div id="report-list" class="list"></div>
+				</div>
+			</ram-tab>
+
+			<ram-tab key="editor">
+				<div class="topbar shadow">
+					<button class="lineout fit" data-to="queue">back</button>
+					<div class="topbar-actions">
+						<button id="editor-save" class="lineout fit accent">save</button>
+					</div>
+				</div>
+				<div class="main col pad low-pad">
+					<div class="list">
+						<h2 id="editor-name" class="break-word"></h2>
+						<div id="editor-folder" class="hint break-word"></div>
+						<div id="editor-meta" class="hint"></div>
+					</div>
+					<div class="list">
+						<div class="split-col">
+							<ram-labeled legend="Artist" id="editor-artist" class="strip wide" placeholder="artist"></ram-labeled>
+							<ram-labeled legend="Title" id="editor-title" class="strip wide" placeholder="title"></ram-labeled>
+						</div>
+						<div class="row-wrap">
+							<button id="editor-search" class="lineout fit">search online</button>
+							<button id="editor-remove" class="lineout fit">remove lyrics</button>
+						</div>
+					</div>
+					<textarea id="editor-lyrics" class="lineout editor-lyrics" placeholder="No lyrics embedded yet. Paste them here or search online." spellcheck="false"></textarea>
+				</div>
+			</ram-tab>
+
+			<ram-tab key="settings">
+				<div class="topbar shadow">
+					<button class="lineout fit" data-to="queue">back</button>
+				</div>
+				<div class="main col pad low-pad">
+					<details open>
+						<summary class="settings-label">Fetching</summary>
+						<div class="list">
+							<label class="row-compact baseline pointer">
+								<input type="checkbox" id="settings-overwrite">
+								<span>Overwrite lyrics that are already embedded</span>
+							</label>
+							<label class="row-compact baseline pointer">
+								<input type="checkbox" id="settings-synced">
+								<span>Prefer synchronised (LRC) lyrics when available</span>
+							</label>
+							<div class="hint">Synchronised lyrics are stored as LRC text in the same tag; most players show them as plain text, some can follow along.</div>
+							<label class="row-compact baseline pointer">
+								<input type="checkbox" id="settings-fallback">
+								<span>Try lyrics.ovh when LRCLIB has nothing</span>
+							</label>
+						</div>
+					</details>
+					<details open>
+						<summary class="settings-label">Editor</summary>
+						<div class="list">
+							<label class="row-compact baseline pointer">
+								<input type="checkbox" id="settings-wrap">
+								<span>Wrap long lyric lines</span>
+							</label>
+							<div class="hint">Off by default so every line break in the file stays visible.</div>
+						</div>
+					</details>
+					<details open>
+						<summary class="settings-label">Appearance</summary>
+						<div class="list">
+							<div>Theme:</div>
+							<div id="settings-themes" class="row-wrap"></div>
+						</div>
+					</details>
+					<details>
+						<summary class="settings-label">About</summary>
+						<div class="list">
+							<div>DeepKick Lyrics <span id="settings-version" class="hint"></span></div>
+							<div class="hint">Successor of Seventh Lyrics Manager. Downloads lyrics and writes them into the <code>USLT</code> frame of MP3 files and the <code>LYRICS</code> comment of FLAC files.</div>
+							<div class="hint">Lyrics are provided by <a href="https://lrclib.net" target="_blank">LRCLIB</a> and, optionally, <a href="https://lyrics.ovh" target="_blank">lyrics.ovh</a>.</div>
+						</div>
+					</details>
+				</div>
+			</ram-tab>
+		</ram-tabs>
+
+		<ram-modal id="popup">
+			<div id="popup-message" class="break-word"></div>
+			<div id="popup-buttons" class="row-compact jc-end"></div>
+		</ram-modal>
+
+		<ram-modal id="search-modal">
+			<div class="row baseline">
+				<h2 class="grow">Search results</h2>
+				<button id="search-close" class="lineout fit">close</button>
+			</div>
+			<div id="search-results" class="list"></div>
+		</ram-modal>
+
+		<div id="toast-container" class="virtual"></div>
+
+		<template id="template-theme-selector">
+			<button class="settings-theme-selector-button"></button>
+		</template>
+	</body>
 </html>
