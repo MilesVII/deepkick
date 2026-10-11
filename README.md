@@ -45,6 +45,8 @@ npm run tauri android dev         # on a connected device / emulator
 npm run tauri android build --debug --target x86_64 --apk   # emulator APK
 ```
 
+App icon: the Seventh Lyrics Manager glyph (`src-tauri/icons/icon-source.png`). The Android launcher icon is a hand-traced vector (`gen/android/app/src/main/res/drawable/ic_launcher_foreground.xml`) on a dark adaptive background, and the notification icon is a white silhouette of the same glyph in the plugin. `tauri icon` regenerates desktop icons fine, but it also overwrites the Android `mipmap-*` and `ic_launcher_background` resources, so restore those from git after running it.
+
 Core tests (tag round-trips against generated files, live LRCLIB lookups):
 ```bash
 DEEPKICK_TEST_DIR=/path/to/testfiles cargo test --manifest-path src-tauri/Cargo.toml --lib -- --include-ignored

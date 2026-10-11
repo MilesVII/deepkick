@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Seventh Lyrics Manager glyph (references/slm/ic_launcher-web.png), traced in its
+    512x512 coordinates and scaled into the 72dp safe zone of the 108dp adaptive canvas
+    so circle and squircle launcher masks never cut the corners.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:pivotX="256"
+        android:pivotY="256"
+        android:scaleX="0.1"
+        android:scaleY="0.1"
+        android:translateX="-202"
+        android:translateY="-202">
+        <path
+            android:fillColor="#FF25BFFF"
+            android:pathData="M32,32 H96 V256 L160,32 H224 L96,480 H32 Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M288,32 H352 L224,480 H160 Z" />
+        <path
+            android:fillColor="#FFDA4000"
+            android:pathData="M416,32 H480 L352,480 H288 Z" />
+    </group>
+</vector>
