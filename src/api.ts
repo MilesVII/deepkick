@@ -15,7 +15,8 @@ export const api = {
 	clearReport: () => invoke<void>("report_clear"),
 
 	fileInfo: (uri: string) => invoke<FileInfo>("file_info", { uri }),
-	setLyrics: (uri: string, lyrics: string | null) => invoke<void>("file_set_lyrics", { uri, lyrics }),
+	setLyrics: (uri: string, lyrics: string | null, fixEncoding = true) =>
+		invoke<void>("file_set_lyrics", { uri, lyrics, fixEncoding }),
 	search: (artist: string, title: string, album: string | null, duration: number | null) =>
 		invoke<Candidate[]>("lyrics_search", { artist, title, album, duration }),
 

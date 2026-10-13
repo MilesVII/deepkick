@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: Settings = {
 	overwrite: false,
 	preferSynced: false,
 	useFallback: true,
+	fixEncoding: true,
 	wrapLyrics: false
 };
 

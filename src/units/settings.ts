@@ -17,21 +17,24 @@ function initOptions() {
 	const overwrite = document.querySelector<HTMLInputElement>("#settings-overwrite")!;
 	const synced    = document.querySelector<HTMLInputElement>("#settings-synced")!;
 	const fallback  = document.querySelector<HTMLInputElement>("#settings-fallback")!;
+	const encoding  = document.querySelector<HTMLInputElement>("#settings-encoding")!;
 	const wrap      = document.querySelector<HTMLInputElement>("#settings-wrap")!;
 
 	const settings = loadSettings();
 	overwrite.checked = settings.overwrite;
 	synced.checked = settings.preferSynced;
 	fallback.checked = settings.useFallback;
+	encoding.checked = settings.fixEncoding;
 	wrap.checked = settings.wrapLyrics;
 
 	const persist = () => saveSettings({
 		overwrite: overwrite.checked,
 		preferSynced: synced.checked,
 		useFallback: fallback.checked,
+		fixEncoding: encoding.checked,
 		wrapLyrics: wrap.checked
 	});
-	[overwrite, synced, fallback, wrap].forEach(i => i.addEventListener("change", persist));
+	[overwrite, synced, fallback, encoding, wrap].forEach(i => i.addEventListener("change", persist));
 }
 
 function initTheme() {

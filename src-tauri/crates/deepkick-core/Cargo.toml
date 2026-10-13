@@ -1,0 +1,13 @@
+[package]
+name = "deepkick-core"
+version = "0.1.0"
+description = "DeepKick Lyrics core: lyrics lookup and MP3/FLAC lyrics tagging"
+authors = ["milesseventh"]
+edition = "2021"
+
+[dependencies]
+lofty = "0.25"
+ureq = { version = "3", features = ["json"] }
+http = "1"
+serde = { version = "1", features = ["derive"] }
+log = "0.4"

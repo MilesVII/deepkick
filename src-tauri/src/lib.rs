@@ -1,9 +1,9 @@
 mod commands;
-mod lyrics;
 mod persist;
 mod state;
-mod tags;
 mod worker;
+
+use deepkick_core::{lyrics, tags};
 
 #[cfg(test)]
 mod tests;

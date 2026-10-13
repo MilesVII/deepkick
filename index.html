@@ -95,6 +95,11 @@
 								<input type="checkbox" id="settings-fallback">
 								<span>Try lyrics.ovh when LRCLIB has nothing</span>
 							</label>
+							<label class="row-compact baseline pointer">
+								<input type="checkbox" id="settings-encoding">
+								<span>Repair tags stored in the wrong character set</span>
+							</label>
+							<div class="hint">Old Windows taggers wrote Cyrillic (CP1251) text into tags labelled Latin-1, which players show as <code>Êîòÿòà</code>. With this on, such tags are rewritten properly whenever a file is processed.</div>
 						</div>
 					</details>
 					<details open>

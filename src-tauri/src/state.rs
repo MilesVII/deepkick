@@ -4,30 +4,7 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 
-/// Outcome of processing one queue entry (or its pending/processing state).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Status {
-	Pending,
-	Processing,
-	/// Fetch mode: lyrics were found and written into the file
-	Done,
-	/// Fetch mode: no provider knew the song
-	NotFound,
-	/// Fetch mode: the file has no artist/title to search with
-	NoTag,
-	/// Fetch mode: the file already had lyrics and overwriting is off
-	Existing,
-	/// Fetch mode: the track is marked as instrumental by the provider
-	Instrumental,
-	/// Remove mode: lyrics were removed
-	Removed,
-	/// Remove mode: there were no lyrics to remove
-	Empty,
-	/// Not an MP3 or FLAC file
-	Unsupported,
-	Error,
-}
+pub use deepkick_core::{Mode, RunOptions, Status};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,24 +24,6 @@ pub struct Item {
 	/// Extra information for the report: error text, provider, ...
 	#[serde(default)]
 	pub detail: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Mode {
-	Fetch,
-	Remove,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", default)]
-pub struct RunOptions {
-	/// Replace lyrics that are already embedded
-	pub overwrite: bool,
-	/// Prefer synchronised (LRC) lyrics when the provider has them
-	pub prefer_synced: bool,
-	/// Try the secondary provider when LRCLIB has nothing
-	pub use_fallback: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

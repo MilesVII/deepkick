@@ -6,10 +6,10 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_deepkick::{DeepkickExt, DoneNotification, ProgressNotification};
 
-use crate::lyrics::{self, Found};
+use deepkick_core::{lyrics, process_file, Outcome};
+
 use crate::persist;
 use crate::state::*;
-use crate::tags;
 
 pub const EVENT_UPDATE: &str = "queue-update";
 pub const EVENT_FINISHED: &str = "queue-finished";
@@ -97,7 +97,10 @@ fn run<R: Runtime>(app: AppHandle<R>, mode: Mode, options: RunOptions) {
 		};
 		emit_update(&app);
 
-		let outcome = process(&app, &client, &item, mode, &options);
+		let outcome = match bridge.open_file(&item.uri, true) {
+			Ok(mut file) => process_file(&mut file, mode, &options, &client),
+			Err(e) => Outcome::error(format!("cannot open: {e}")),
+		};
 		log::info!("[{}] {} -> {:?} {}", index + 1, item.name, outcome.status, outcome.detail.clone().unwrap_or_default());
 
 		{
@@ -165,119 +168,5 @@ fn run<R: Runtime>(app: AppHandle<R>, mode: Mode, options: RunOptions) {
 }
 
 pub fn summarize(report: &Report) -> String {
-	let count = |s: Status| report.summary.get(&s).copied().unwrap_or(0);
-	let mut parts: Vec<String> = vec![];
-	let mut push = |n: usize, label: &str| {
-		if n > 0 {
-			parts.push(format!("{n} {label}"));
-		}
-	};
-	match report.run.mode {
-		Mode::Fetch => {
-			push(count(Status::Done), "embedded");
-			push(count(Status::Existing), "already had lyrics");
-			push(count(Status::NotFound), "not found");
-			push(count(Status::Instrumental), "instrumental");
-			push(count(Status::NoTag), "untagged");
-		},
-		Mode::Remove => {
-			push(count(Status::Removed), "cleaned");
-			push(count(Status::Empty), "had no lyrics");
-		},
-	}
-	push(count(Status::Unsupported), "unsupported");
-	push(count(Status::Error), "failed");
-	push(count(Status::Pending), "skipped");
-	if parts.is_empty() {
-		"Nothing to do".into()
-	} else {
-		parts.join(", ")
-	}
-}
-
-struct Outcome {
-	status: Status,
-	detail: Option<String>,
-	artist: Option<String>,
-	title: Option<String>,
-}
-
-impl Outcome {
-	fn new(status: Status) -> Self {
-		Outcome { status, detail: None, artist: None, title: None }
-	}
-	fn error(message: impl Into<String>) -> Self {
-		Outcome { status: Status::Error, detail: Some(message.into()), artist: None, title: None }
-	}
-}
-
-fn process<R: Runtime>(
-	app: &AppHandle<R>,
-	client: &lyrics::Client,
-	item: &Item,
-	mode: Mode,
-	options: &RunOptions,
-) -> Outcome {
-	let bridge = app.deepkick();
-	let mut file = match bridge.open_file(&item.uri, true) {
-		Ok(f) => f,
-		Err(e) => return Outcome::error(format!("cannot open: {e}")),
-	};
-	let kind = match tags::probe(&mut file) {
-		Ok(Some(kind)) => kind,
-		Ok(None) => return Outcome::new(Status::Unsupported),
-		Err(e) => return Outcome::error(format!("cannot read: {e}")),
-	};
-	let info = match tags::read(&mut file, kind) {
-		Ok(info) => info,
-		Err(e) => return Outcome::error(format!("cannot read tags: {e}")),
-	};
-
-	let mut outcome = match mode {
-		Mode::Fetch => {
-			if info.lyrics.is_some() && !options.overwrite {
-				Outcome::new(Status::Existing)
-			} else {
-				match (&info.artist, &info.title) {
-					(Some(artist), Some(title)) => match client.find(
-						artist,
-						title,
-						info.album.as_deref(),
-						info.duration_secs,
-						options.prefer_synced,
-						options.use_fallback,
-					) {
-						Ok(Some(Found::Instrumental)) => Outcome::new(Status::Instrumental),
-						Ok(Some(Found::Lyrics { text, source })) => {
-							match tags::write_lyrics(&mut file, kind, Some(&text)) {
-								Ok(()) => Outcome {
-									status: Status::Done,
-									detail: Some(source),
-									artist: None,
-									title: None,
-								},
-								Err(e) => Outcome::error(format!("cannot write: {e}")),
-							}
-						},
-						Ok(None) => Outcome::new(Status::NotFound),
-						Err(e) => Outcome::error(e),
-					},
-					_ => Outcome::new(Status::NoTag),
-				}
-			}
-		},
-		Mode::Remove => {
-			if info.lyrics.is_none() {
-				Outcome::new(Status::Empty)
-			} else {
-				match tags::write_lyrics(&mut file, kind, None) {
-					Ok(()) => Outcome::new(Status::Removed),
-					Err(e) => Outcome::error(format!("cannot write: {e}")),
-				}
-			}
-		},
-	};
-	outcome.artist = info.artist;
-	outcome.title = info.title;
-	outcome
+	deepkick_core::summary_text(report.run.mode, &report.summary)
 }

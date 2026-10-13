@@ -1,0 +1,27 @@
+[package]
+name = "deepkick-cli"
+version = "0.1.0"
+description = "DeepKick Lyrics console utility: fetch, edit and remove MP3/FLAC lyrics from the terminal"
+authors = ["milesseventh"]
+edition = "2021"
+
+[[bin]]
+name = "deepkick"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+ctrlc = "3"
+deepkick-core = { path = "../deepkick-core" }
+dirs = "6"
+ratatui = "0.30"
+serde = { version = "1", features = ["derive"] }
+toml = "1"
+unicode-width = "0.2"
+walkdir = "2"
+which = "8"
+
+[build-dependencies]
+static_vcruntime = "3"
+winresource = "0.1"

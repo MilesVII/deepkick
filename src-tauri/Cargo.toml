@@ -6,7 +6,7 @@ authors = ["milesseventh"]
 edition = "2021"
 
 [workspace]
-members = ["plugins/deepkick"]
+members = ["plugins/deepkick", "crates/deepkick-core", "crates/deepkick-cli"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -24,13 +24,18 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-deepkick = { path = "plugins/deepkick" }
+deepkick-core = { path = "crates/deepkick-core" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-lofty = "0.25"
-ureq = { version = "3", features = ["json"] }
 thiserror = "2"
 log = "0.4"
 tauri-plugin-log = "2"
-http = "1"
 
+# Small single-file build of the console utility:
+#   cargo build -p deepkick-cli --profile dist
+[profile.dist]
+inherits = "release"
+lto = true
+codegen-units = 1
+strip = true
 

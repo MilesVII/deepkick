@@ -164,6 +164,7 @@ pub async fn file_set_lyrics<R: Runtime>(
 	app: AppHandle<R>,
 	uri: String,
 	lyrics: Option<String>,
+	fix_encoding: Option<bool>,
 ) -> Result<(), String> {
 	let handle = app.clone();
 	let target = uri.clone();
@@ -177,7 +178,7 @@ pub async fn file_set_lyrics<R: Runtime>(
 			.open_file(&target, true)
 			.map_err(|e| format!("cannot open: {e}"))?;
 		let kind = tags::probe(&mut file)?.ok_or("Not an MP3 or FLAC file")?;
-		tags::write_lyrics(&mut file, kind, lyrics.as_deref())
+		tags::write_lyrics(&mut file, kind, lyrics.as_deref(), fix_encoding.unwrap_or(true)).map(|_| ())
 	})
 	.await
 	.map_err(|e| e.to_string())??;

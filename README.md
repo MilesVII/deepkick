@@ -1,5 +1,5 @@
 # DeepKick Lyrics
-Puts lyrics into MP3 and FLAC metadata. Android app built with Tauri 2, a vanilla TS frontend and Rust.
+Puts lyrics into MP3 and FLAC metadata. Android app built with Tauri 2, a vanilla TS frontend and Rust, plus `deepkick`, a single-executable interactive console utility for the desktop that shares the same core.
 
 Successor of *Seventh Lyrics Manager*, which stopped working once Android moved to the Storage Access Framework.
 
@@ -9,6 +9,48 @@ Successor of *Seventh Lyrics Manager*, which stopped working once Android moved 
 - **Remove lyrics** from every file in the queue
 - A notification is posted when the run is over; tapping it opens the **report** with the status of every file
 - Tap any file to open the **editor**: view, edit, search online (pick between plain and synced candidates), save or remove its lyrics
+- **Broken files are handled**: padding junk before the audio and malformed date frames (`1997 / 1998`) no longer fail the file, and Cyrillic tags that old Windows taggers stored as CP1251 bytes labelled Latin-1 (shown as `Êîòÿòà` by players) are repaired on the fly, so the song is still found and the tags are rewritten properly. The repair can be switched off in the settings.
+
+## Console utility (`deepkick`)
+A single executable (`deepkick.exe` on Windows, no installer, no runtime DLLs to ship) with a full-screen terminal interface and a few commands for scripting.
+
+```bash
+deepkick                          # interactive interface
+deepkick D:\Music "E:\More music" # interactive, with these folders already queued
+deepkick fetch D:\Music           # no interface: fetch and print one line per file
+deepkick remove -y D:\Music\Album
+deepkick show song.flac           # tags and lyrics of one file
+deepkick edit song.mp3            # edit the lyrics in your text editor, git-style
+deepkick config editor "code --wait"
+```
+Dropping a folder onto `deepkick.exe` in Explorer opens the interface with that folder queued, and dropping one onto the running window adds it to the queue (the console types the path as keystrokes; they are recognised as a path when they form one that exists).
+
+In the interface:
+
+| key | action |
+|---|---|
+| `a` | browse for files and folders (Space adds, `a` adds the current folder, `g` goes to a typed path) |
+| `p` | type, paste or drag paths onto the window (Tab completes) |
+| `f` / `r` | fetch / remove lyrics for the queue, or only the filtered files |
+| `Tab` | filter the queue by status; this is the report after a run |
+| `e` / Enter | edit the selected file's lyrics in your editor |
+| `s` | search LRCLIB and write a match (Enter) or edit it first (`e`) |
+| `v` | view the lyrics |
+| `x` / `X` | drop the selected file / clear the queue |
+| `c` | settings |
+| `Esc` | stop a run (the current file is always finished first) |
+
+**Editing** works like git commit messages: the lyrics are written to a temporary file below a commented header and a scissors line, the editor is started and waited for, and whatever is below the scissors line when it closes is written back. An empty text removes the lyrics. The editor is taken from `DEEPKICK_EDITOR`, the `editor` setting, `VISUAL`, `EDITOR`, then `notepad` on Windows or `nano`/`vim`/`vi` elsewhere. GUI editors need their wait flag (`code --wait`, `subl -w`).
+
+Settings live in `%APPDATA%\deepkick-lyrics\config.toml` (`~/.config/deepkick-lyrics/config.toml` on Linux; `DEEPKICK_CONFIG` overrides the path): `overwrite`, `prefer-synced`, `fallback`, `fix-encoding`, `editor`.
+
+The executable carries the app icon (`crates/deepkick-cli/deepkick.ico`, embedded by its build script); rebuild the `.ico` from `src-tauri/icons/icon-source.png` if the logo changes.
+
+Build it with:
+```bash
+cargo build --manifest-path src-tauri/Cargo.toml -p deepkick-cli --profile dist
+# -> src-tauri/target/dist/deepkick.exe
+```
 
 ## Layout
 ```
@@ -26,9 +68,18 @@ src-tauri/
     commands.rs       IPC commands
     state.rs          queue / run / report types
     worker.rs         the queue runner thread
-    tags.rs           lofty-based lyrics read/write for MP3 and FLAC
-    lyrics.rs         LRCLIB + lyrics.ovh client (ureq)
     persist.rs        queue + report persisted in the app data dir
+  crates/deepkick-core/   shared by the app and the console utility
+    src/tags.rs       lofty-based lyrics read/write for MP3 and FLAC (tolerant parsing, year rescue)
+    src/encoding.rs   repair of CP1251 / UTF-8 text stored as Latin-1
+    src/lyrics.rs     LRCLIB + lyrics.ovh client (ureq, rustls)
+    src/process.rs    statuses, run options, processing one file, run summaries
+  crates/deepkick-cli/    the `deepkick` console utility
+    src/main.rs       command line (clap)
+    src/batch.rs      fetch / remove / show / edit / config commands
+    src/tui/          interactive interface (ratatui): queue, browser, search, settings
+    src/editor.rs     external editor round trip
+    src/queue.rs      queue entries and the background runner
   plugins/deepkick/   local Tauri plugin
     src/mobile.rs     Rust side: calls into the Kotlin plugin
     src/desktop.rs    desktop stand-in (rfd dialogs, plain paths) for development on a PC
@@ -47,12 +98,13 @@ npm run tauri android build --debug --target x86_64 --apk   # emulator APK
 
 App icon: the Seventh Lyrics Manager glyph (`src-tauri/icons/icon-source.png`). The Android launcher icon is a hand-traced vector (`gen/android/app/src/main/res/drawable/ic_launcher_foreground.xml`) on a dark adaptive background, and the notification icon is a white silhouette of the same glyph in the plugin. `tauri icon` regenerates desktop icons fine, but it also overwrites the Android `mipmap-*` and `ic_launcher_background` resources, so restore those from git after running it.
 
-Core tests (tag round-trips against generated files, live LRCLIB lookups):
+Tests (tag round-trips against generated files, live LRCLIB lookups, console utility rendering and parsing):
 ```bash
-DEEPKICK_TEST_DIR=/path/to/testfiles cargo test --manifest-path src-tauri/Cargo.toml --lib -- --include-ignored
+DEEPKICK_TEST_DIR=/path/to/testfiles cargo test --manifest-path src-tauri/Cargo.toml --workspace --exclude tauri-plugin-deepkick -- --include-ignored
 ```
 Test files can be generated with ffmpeg, e.g.
 `ffmpeg -f lavfi -i "sine=frequency=440:duration=4" -metadata artist=Radiohead -metadata title=Creep -c:a libmp3lame creep.mp3`.
+The robustness tests additionally want `junk.mp3` (1.5 KB of zeros between the ID3v2 tag and the audio), `year.mp3` (a `TYER` frame holding `1997 / 1998`) and `cp1251.mp3` (artist `Дельфин` and title `Сны` as CP1251 bytes in Latin-1 frames); they are skipped when a fixture is missing. `cargo run -p deepkick-core --example inspect -- [--keep|--set] FILE` dumps what lofty makes of a file.
 
 ## Prompt
 ```

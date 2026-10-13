@@ -103,7 +103,8 @@ function renderMeta() {
 		info.kind.toUpperCase(),
 		info.album ?? "",
 		formatDuration(info.durationSecs),
-		info.lyrics ? "lyrics embedded" : "no lyrics"
+		info.lyrics ? "lyrics embedded" : "no lyrics",
+		info.repaired ? `tags repaired from ${info.repaired === "cp1251" ? "CP1251" : "UTF-8"}` : ""
 	].filter(s => s).join(" · ");
 }
 
@@ -113,7 +114,7 @@ async function save() {
 	const text = e.lyrics.value.replace(/\r\n/g, "\n").trim();
 	setBusy(true);
 	try {
-		await api.setLyrics(currentUri, text || null);
+		await api.setLyrics(currentUri, text || null, loadSettings().fixEncoding);
 		loadedLyrics = text;
 		toast(text ? "Lyrics saved" : "Lyrics removed");
 		if (info) info.lyrics = text || null;

@@ -23,3 +23,6 @@ references
 *.njsproj
 *.sln
 *.sw?
+
+# personal music used for manual checks
+samples

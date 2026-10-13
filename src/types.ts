@@ -49,7 +49,8 @@ export type Report = {
 export type RunOptions = {
 	overwrite: boolean,
 	preferSynced: boolean,
-	useFallback: boolean
+	useFallback: boolean,
+	fixEncoding: boolean
 };
 
 export type FileInfo = {
@@ -58,7 +59,9 @@ export type FileInfo = {
 	title: string | null,
 	album: string | null,
 	durationSecs: number | null,
-	lyrics: string | null
+	lyrics: string | null,
+	/** set when the tags had to be repaired: what the bytes really were */
+	repaired?: "cp1251" | "utf8"
 };
 
 export type Candidate = {
