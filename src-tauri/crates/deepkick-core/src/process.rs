@@ -157,7 +157,8 @@ pub fn process_file(file: &mut File, mode: Mode, options: &RunOptions, client: &
 							LyricsChange::Set(text),
 						),
 						Ok(None) => (Outcome::new(Status::NotFound), LyricsChange::Keep),
-						Err(e) => return Outcome::error(e),
+						// a provider or network error should not cost the file its repairs
+						Err(e) => (Outcome::error(e), LyricsChange::Keep),
 					},
 					_ => (Outcome::new(Status::NoTag), LyricsChange::Keep),
 				}
@@ -172,21 +173,37 @@ pub fn process_file(file: &mut File, mode: Mode, options: &RunOptions, client: &
 		},
 	};
 
-	let repair = options.fix_encoding && info.repaired.is_some();
+	let repair = options.fix_encoding && (info.repaired.is_some() || info.structure_fixed);
 	if change != LyricsChange::Keep || repair {
 		match tags::write(file, kind, change, options.fix_encoding) {
 			Ok(report) => {
+				let mut notes = vec![];
 				if report.repaired_fields > 0 {
 					let how = info.repaired.map(|r| r.label()).unwrap_or("Latin-1");
 					let n = report.repaired_fields;
-					let note = format!("{n} tag field{} repaired from {how}", if n == 1 { "" } else { "s" });
+					notes.push(format!("{n} tag field{} repaired from {how}", if n == 1 { "" } else { "s" }));
+				}
+				if report.structure_fixed {
+					notes.push("tag structure fixed".to_string());
+				}
+				if report.year_rescued {
+					notes.push("year kept from a malformed date".to_string());
+				}
+				if !notes.is_empty() {
+					let note = notes.join(", ");
 					outcome.detail = Some(match outcome.detail.take() {
 						Some(d) => format!("{d} · {note}"),
 						None => note,
 					});
 				}
 			},
-			Err(e) => return Outcome::error(format!("cannot write: {e}")),
+			Err(e) => {
+				let text = format!("cannot write: {e}");
+				return match outcome.detail.take() {
+					Some(d) if outcome.status == Status::Error => Outcome::error(format!("{d}; {text}")),
+					_ => Outcome::error(text),
+				};
+			},
 		}
 	}
 	outcome.artist = info.artist;

@@ -165,6 +165,9 @@ pub fn show(path: &Path) -> Result<()> {
 	if let Some(how) = info.repaired {
 		println!("Note:     the tags are stored as {} bytes labelled Latin-1 (shown repaired)", how.label());
 	}
+	if info.structure_fixed {
+		println!("Note:     the tag header or frame flags are malformed; it is read with them patched and fixed for good when written");
+	}
 	match &info.lyrics {
 		Some(lyrics) => {
 			println!("Lyrics:   {} lines", lyrics.lines().count());

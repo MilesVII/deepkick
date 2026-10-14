@@ -97,3 +97,40 @@ fn leaves_encoding_alone_when_asked() {
 	assert_eq!(info.repaired, Some(Repair::Cp1251), "still mis-encoded on disk, repaired on read");
 	let _ = std::fs::remove_file(path);
 }
+
+#[test]
+fn survives_a_bogus_extended_header_flag() {
+	let Some(path) = fixture("exthdr.mp3") else { return };
+	let mut file = open(&path);
+	let info = tags::read(&mut file, Kind::Mp3).unwrap();
+	assert_eq!(info.artist.as_deref(), Some("Radiohead"));
+	assert!(info.structure_fixed);
+	let report = tags::write_lyrics(&mut file, Kind::Mp3, Some("la"), true).unwrap();
+	assert!(report.structure_fixed);
+	drop(file);
+	let mut file = open(&path);
+	let info = tags::read(&mut file, Kind::Mp3).unwrap();
+	assert_eq!(info.lyrics.as_deref(), Some("la"));
+	assert!(!info.structure_fixed, "the rewritten tag should be clean");
+	let _ = std::fs::remove_file(path);
+}
+
+#[test]
+fn survives_bogus_length_indicators_and_null_languages() {
+	let Some(path) = fixture("dli.mp3") else { return };
+	let mut file = open(&path);
+	let info = tags::read(&mut file, Kind::Mp3).unwrap();
+	assert_eq!(info.artist.as_deref(), Some("Radiohead"));
+	assert_eq!(info.title.as_deref(), Some("Creep"));
+	assert!(info.structure_fixed);
+	// the null-language comments would make lofty refuse the write without the fix
+	let report = tags::write_lyrics(&mut file, Kind::Mp3, Some("la"), true).unwrap();
+	assert!(report.structure_fixed);
+	drop(file);
+	let mut file = open(&path);
+	let info = tags::read(&mut file, Kind::Mp3).unwrap();
+	assert_eq!(info.lyrics.as_deref(), Some("la"));
+	assert_eq!(info.album.as_deref(), Some("Pablo Honey"));
+	assert!(!info.structure_fixed);
+	let _ = std::fs::remove_file(path);
+}

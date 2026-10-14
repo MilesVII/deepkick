@@ -9,7 +9,7 @@ Successor of *Seventh Lyrics Manager*, which stopped working once Android moved 
 - **Remove lyrics** from every file in the queue
 - A notification is posted when the run is over; tapping it opens the **report** with the status of every file
 - Tap any file to open the **editor**: view, edit, search online (pick between plain and synced candidates), save or remove its lyrics
-- **Broken files are handled**: padding junk before the audio and malformed date frames (`1997 / 1998`) no longer fail the file, and Cyrillic tags that old Windows taggers stored as CP1251 bytes labelled Latin-1 (shown as `Êîòÿòà` by players) are repaired on the fly, so the song is still found and the tags are rewritten properly. The repair can be switched off in the settings.
+- **Broken files are handled**: padding junk before the audio, malformed date frames (`1997 / 1998`), bogus header and frame flags left by old taggers (an extended-header flag without the header, data-length bits on frames that have none), and comment frames with no language code no longer fail the file. Cyrillic tags that old Windows taggers stored as CP1251 bytes labelled Latin-1 (shown as `Êîòÿòà` by players) are repaired on the fly, so the song is still found. Repairs are written back whenever the file is processed, lyrics or not, and the report says what was fixed. Reading never modifies a file: defective tags are patched in memory first. The repair can be switched off in the settings.
 
 ## Console utility (`deepkick`)
 A single executable (`deepkick.exe` on Windows, no installer, no runtime DLLs to ship) with a full-screen terminal interface and a few commands for scripting.
@@ -104,7 +104,7 @@ DEEPKICK_TEST_DIR=/path/to/testfiles cargo test --manifest-path src-tauri/Cargo.
 ```
 Test files can be generated with ffmpeg, e.g.
 `ffmpeg -f lavfi -i "sine=frequency=440:duration=4" -metadata artist=Radiohead -metadata title=Creep -c:a libmp3lame creep.mp3`.
-The robustness tests additionally want `junk.mp3` (1.5 KB of zeros between the ID3v2 tag and the audio), `year.mp3` (a `TYER` frame holding `1997 / 1998`) and `cp1251.mp3` (artist `Дельфин` and title `Сны` as CP1251 bytes in Latin-1 frames); they are skipped when a fixture is missing. `cargo run -p deepkick-core --example inspect -- [--keep|--set] FILE` dumps what lofty makes of a file.
+The robustness tests additionally want `junk.mp3` (1.5 KB of zeros between the ID3v2 tag and the audio), `year.mp3` (a `TYER` frame holding `1997 / 1998`), `cp1251.mp3` (artist `Дельфин` and title `Сны` as CP1251 bytes in Latin-1 frames), `exthdr.mp3` (extended-header flag set, no extended header) and `dli.mp3` (v2.4 frames flagged with a data length indicator they do not have, plus comments with a `   ` language); they are skipped when a fixture is missing. `cargo run -p deepkick-core --example inspect -- [--keep|--set] FILE` dumps what lofty makes of a file.
 
 ## Prompt
 ```
